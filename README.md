@@ -33,19 +33,20 @@
 6. **Important Note**
     - Some of the below endpoints are protected and require token based authentication.
     - I have checked in the db.sqlite3 file as well which already contains 2 users created for testing. You can obtain tokens for these users using the API,
-    `GET /v1/users/login/?username=test&password=test1234` or `GET /v1/users/login/?username=vinay&password=vinay123`
-    This request will return a token that needs to be sent as a authorization header like this `Authorization: Token 69e76dc16a64af8c765f0cc6015c815b963c339b`
+ 
+    * `GET /v1/users/login/?username=test&password=test1234` or `GET /v1/users/login/?username=vinay&password=vinay123`
+    * This request will return a token that needs to be sent as a authorization header like this `Authorization: Token 69e76dc16a64af8c765f0cc6015c815b963c339b`
     - This is a highly unsecure way of sharing a DB but this is just to make testing easier :) Just calling it out here.
 
 ## Endpoints:
 Endpoints 1. and 4. will require a 'Authorization token' to be sent in the header in order to verify the user accessing these endpoints. Any endpoint accessed without the 'Authorization token' will be deemed as being accessed by a 3rd party.
 
-GET v1/users/login?name=<username>&password=<password>
-GET v1/commitments/
-POST /v1/commitments/
-GET /v1/commitments/<id>/
-POST /v1/commitments/<id>/readability/
-GET /v1/commitments/<id>/verification/
+- GET v1/users/login?name=<username>&password=<password>
+- GET v1/commitments/
+- POST /v1/commitments/
+- GET /v1/commitments/<id>/
+- POST /v1/commitments/<id>/readability/
+- GET /v1/commitments/<id>/verification/
 
 An explanation of each of the above endpoints is given below,
 
@@ -135,9 +136,9 @@ An explanation of each of the above endpoints is given below,
 ## Algortihms used
 1. In order to create a commitment value, SHA256 digest scheme is used in order to create a digest from the secret message, created timestamp and the user's authtoken. This ensures uniqueness and binding property of the message to the user and the time at which the message was created.
 
-2. The actions allowed on the exposed endpoints is restricted only to the allowed ones on that endpoint so that an adversary does not try to use an endpoint in ways that it is not supposed to be used.
+2. Irrevocability of the revealing the messages is ensured by having a singleton object generated during the revealing phase that cannot be changed, updated or deleted by anyone including the committer himself.
 
-3. Irrevocability of the revealing the messages is ensured by having a singleton object generated during the revealing phase that cannot be changed, updated or deleted by anyone including the committer himself.
+3. The actions allowed on the exposed endpoints is restricted only to the allowed ones on that endpoint so that an adversary does not try to use an endpoint in ways that it is not supposed to be used. For example, PUT/PATCH/DELETE is not allowed on the commitment endpoint and PUT/PATCH/DELETE is not allowed on the 'readability' singleton object etc.
 
 4. Verification that the message has not been tampered with since generation of the message is done by generating a commited_value from the message, created_ts and user id and ensuring that its equal to the stored commitment value.
 
