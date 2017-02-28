@@ -25,6 +25,11 @@ class CommitmentDetailSerializer(serializers.ModelSerializer):
         model = Commitment
         fields = ('id', 'user', 'commitment_value',)
 
+class CommitmentVerificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Commitment
+        fields = ('id', 'commitment_value', 'tampered', 'created_ts',)
+
 class CommitmentDetailReadableSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
     class Meta:

@@ -8,15 +8,31 @@ class Commitment(models.Model):
     message = models.CharField(max_length=250, null=False, blank=False)
     commitment_value = models.CharField(max_length=256)
     created_ts = models.DateTimeField(auto_now_add=True)
+    tampered= models.BooleanField(default=False)
+    
+    def generate_digest(self, msg_sequence):
+        h = hashlib.new("sha256") #Is this enough? or maybe use 'pbkdf2_hmac'?
+        h.update(str(msg_sequence))
+        return h.hexdigest()
 
     def generate_commitment_value(self):
         """
-            Generate the commitment_value using both the message 
+            Generate the commitment_value using both the message
             and the created_ts value
         """
-        h = hashlib.new("sha256") #Is this enough? or maybe use 'pbkdf2_hmac'?
-        h.update(self.message+str(self.created_ts))
-        self.commitment_value = h.hexdigest()
+        msg_sequence = self.message+str(self.created_ts)+str(self.user.username)
+        self.commitment_value = self.generate_digest(msg_sequence)
+
+    def verify(self, commitment_value):
+        """
+            Generate the commitment_value using the message
+            and the created_ts value again and verify its equal to
+            instance's commitment_value
+        """
+        msg_sequence = self.message+str(self.created_ts)+str(self.user.username)
+        generated_commitment_value = self.generate_digest(msg_sequence)
+        self.tampered = generated_commitment_value != commitment_value
+        self.save()
 
 class CommitmentReadability(models.Model):
     commitment = models.OneToOneField(Commitment,

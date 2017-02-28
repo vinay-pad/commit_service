@@ -4,6 +4,7 @@ from .views import (
     CommitmentList,
     CommitmentDetail,
     CommitmentReadabilityCreate,
+    CommitmentVerificationDetail,
     )
 
 urlpatterns = format_suffix_patterns([
@@ -15,4 +16,7 @@ urlpatterns = format_suffix_patterns([
     url(r'^(?P<pk>[0-9]+)/readability/$',
         CommitmentReadabilityCreate.as_view(),
         name="commitmentsreadability-detail"),
+    url(r'^(?P<pk>[0-9]+)/verification/$',
+        CommitmentVerificationDetail.as_view(),
+        name="commitmentsverification-detail"),
 ])

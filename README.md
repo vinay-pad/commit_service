@@ -40,7 +40,26 @@
 ## Endpoints:
 Endpoints 1. and 4. will require a 'Authorization token' to be sent in the header in order to verify the user accessing these endpoints. Any endpoint accessed without the 'Authorization token' will be deemed as being accessed by a 3rd party.
 
-1. Get list of all commitments. 
+GET v1/users/login?name=<username>&password=<password>
+GET v1/commitments/
+POST /v1/commitments/
+GET /v1/commitments/<id>/
+POST /v1/commitments/<id>/readability/
+GET /v1/commitments/<id>/verification/
+
+An explanation of each of the above endpoints is given below,
+
+1. Get user token
+    ```
+    GET v1/users/login?name=<username>&password=<password>
+    returns `200 OK`
+    {
+        "token": <user-token>
+    }
+
+    ```
+
+2. Get list of all commitments. 
     ```
     GET /v1/commitments/
     returns `200 OK` with a tuple of
@@ -50,7 +69,7 @@ Endpoints 1. and 4. will require a 'Authorization token' to be sent in the heade
             }
     ```
 
-2. Create a new commitment. Throws a `401 Unauthorized error` if a valid auth token isn't passed in the header
+3. Create a new commitment. Throws a `401 Unauthorized error` if a valid auth token isn't passed in the header
     ```
     POST /v1/commitments/  with 'Authorization token' in the header and POST params 'message=<secret-message>'
     returns `201 Created`
@@ -62,7 +81,7 @@ Endpoints 1. and 4. will require a 'Authorization token' to be sent in the heade
         }
     ```
 
-3. Get details of a particular commitment 
+4. Get details of a particular commitment 
     ```
     GET /v1/commitments/<id>/
         returns `200 OK` if the resource exists with below response
@@ -84,7 +103,7 @@ Endpoints 1. and 4. will require a 'Authorization token' to be sent in the heade
         if this commit has been made readable.
 
     ```
-4. Irrevocably reveal a commitment to everyone
+5. Irrevocably reveal a commitment to everyone
     ```
         POST /v1/commitments/<commit-id>/readability/ with 'Authorization token' in the header. This doesn't take any POST params. It just creates a 'readability' singleton instance and associates it with the commitment. This action is irreversible because the only action allowed on this endpoint is 'POST'.
         returns `201 Created`
@@ -100,7 +119,7 @@ Endpoints 1. and 4. will require a 'Authorization token' to be sent in the heade
             }
         when called subsequent times, without making any changes to the resource
     ```
-5. Verify when a message was posted and that it hasn't been tampered with.
+6. Verify when a message was posted and that it hasn't been tampered with since then.
     ```
         GET /v1/commitments/<id>/verification/
         returns 
@@ -109,6 +128,42 @@ Endpoints 1. and 4. will require a 'Authorization token' to be sent in the heade
             'user': <username-of-committer>,
             'commit_value': <commitment-value>,
             'created_ts': <created-timestamp-of-secret-message-in-utc>'
-            'tampered_since_creation': <true-or-fasle>
+            'tampered': <true-or-fasle>
         }
     ```
+
+## Algortihms used
+1. In order to create a commitment value, SHA256 digest scheme is used in order to create a digest from the secret message, created timestamp and the user's authtoken. This ensures uniqueness and binding property of the message to the user and the time at which the message was created.
+
+2. The actions allowed on the exposed endpoints is restricted only to the allowed ones on that endpoint so that an adversary does not try to use an endpoint in ways that it is not supposed to be used.
+
+3. Irrevocability of the revealing the messages is ensured by having a singleton object generated during the revealing phase that cannot be changed, updated or deleted by anyone including the committer himself.
+
+4. Verification that the message has not been tampered with since generation of the message is done by generating a commited_value from the message, created_ts and user id and ensuring that its equal to the stored commitment value.
+
+5. The user is authenticated using a token that is generated once using his username and password. It is not ideal to re-use the same token everytime, instead it should expire within a certain amount of time and we should be generating new tokens.
+
+## Known Vulnerabilities
+1. The SHA256 digest created ensures uniqueness to a given message, user and timestamp but an adversary with unbounded computing capabilities can generate repeatedly run the hash function of changing inputs in order to recover the secret message.
+
+2. The service itself is assumed to be not compromised, if it is compromised then the secret messages will be known to the adversary. One way to avoid this is to store encrypt the secret messages using the user's token. The token of the user himself should not be stored in the system in such a case and the token needs to have lifetimes that expire within a period of time.
+
+3. If the adversary knows that the digest is computed on the concatenation of messge, timestamp and userid, it narrows down the possibility of guesses of the message.
+
+## Testing
+1. Django REST testing framework was used to run unit/integration tests for the following user flows,
+
+    ### Flow 1 - verify secrecy of message
+    1. User login and gets token.
+    2. User creates a commitment.
+    3. Verify commitment is accessible via the commit-id
+    4. Verify commitment's message is not visible in the GET /v1/commitments/<id>/ endpoint.
+    
+    ### Flow 2 - verify message can be revealed only once irrevocably.
+    1. Repeat steps 1 to 4 from Flow 1.
+    2. POST to the readability endpoint to make the message readable.
+    3. Repeat step 2 and verify it doesnt change anything in the resource.
+
+    ### Flow 3 - verify message hasn't been tampered with since creation
+    1. Repeat steps 1 to 4 from Flow 1.
+    2. Call the verification endpoint and verify that the 'tampered' flag is false.

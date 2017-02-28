@@ -5,7 +5,8 @@ from commitments.serializers import CommitmentListSerializer, \
                                     CommitmentDetailSerializer,\
                                     CommitmentCreateSerializer, \
 				    CommitmentReadabilitySerializer,\
-                                    CommitmentDetailReadableSerializer
+                                    CommitmentDetailReadableSerializer, \
+                                    CommitmentVerificationSerializer
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework import status
@@ -54,6 +55,20 @@ class CommitmentDetail(generics.RetrieveAPIView):
             return CommitmentDetailReadableSerializer
         except CommitmentReadability.DoesNotExist:
             return CommitmentDetailSerializer
+
+class CommitmentVerificationDetail(generics.RetrieveAPIView):
+    queryset = Commitment.objects.all()
+    serializer_class = CommitmentVerificationSerializer
+
+    def get_queryset(self):
+        commitment_id = self.kwargs['pk']
+        commitment = Commitment.objects.get(id=commitment_id)
+        commitment_value = self.request.query_params.get('commitment_value', None)
+        if  commitment_value:
+            commitment.verify(commitment_value)
+        else:
+            commitment.verify(commitment.commitment_value)
+        return Commitment.objects.filter(id=commitment_id)
 
 class CommitmentReadabilityCreate(generics.CreateAPIView):
     queryset = CommitmentReadability.objects.all()
