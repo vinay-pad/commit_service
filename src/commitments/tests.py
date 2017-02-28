@@ -6,16 +6,16 @@ import json
 import unittest
 from users.models import User
 from rest_framework.test import APIClient
-
+import os
 
 class CommitmentTest(APITestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
         self.client = APIClient()
-        self.server = 'http://ec2-54-67-126-154.us-west-1.compute.amazonaws.com:8000/'
-        self.uname = 'vinay'
-        self.pword = 'vinay123'
-        self.user = User.objects.create_user('vinay','', 'vinay123')
+        self.server = os.environ.get('TEST_SERVER')
+        self.uname = os.environ.get('TEST_USER')
+        self.pword = os.environ.get('TEST_PWD')
+        self.user = User.objects.create_user(self.uname,'', self.pword)
 
     def login(self):
         response = self.client.get(self.server+'/v1/users/login/?username='+self.uname+'&password='+self.pword)

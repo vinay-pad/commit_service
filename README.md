@@ -2,8 +2,11 @@
 
 ## Provides the following functionalities
 1. An endpoint for someone to post a secret message. The message would be identified as being posted by this person and will have the time at which it was generated in UTC time. We will refer to the secret message as a 'commitment'.
-2. Each commitment posted by a committer will have a unique ID, username of the commiter and a 'commitment value', which will be a random sequences of bytes that will not reveal any information about the message itself.
-3. Each commitment posted by a committer will not have the readable message, until a another request to a 'reveal' endpoint is posted by the committer, at which point this message becomes readable by everyone.
+2. Each commitment posted by a committer will have 
+    - a unique ID
+    - username of the commiter
+    - 'commitment value', which will be a unique random sequences of bytes that will not reveal any information about the message itself.
+3. Each commitment will not have the message accesible, until a 'reveal' request is posted by the committer and the message becomes readable by everyone.
 4. The committer of a given message will be able to reveal the message to everyone by calling an endpoint that would be accessible only to the committer.
 5. The 3rd party (Eveyone other than the committer) can view the commitment posted by a committer using the commitment_value generated in step 2.
 6. The 3rd party can call a 'verify' endpoint on a given message in order to verify that a message has not been changed since the time it was posted.
@@ -16,7 +19,7 @@
 ## Tools/Frameworks used:
 1. Ubuntu 16.04 VM running on a AWS EC2 instance.
 2. Python for the backend with Django web framework version 1.10 (latest stable)
-3. sqlite DB that comes along with Django. This is was only for ease of use/testing. For production i would opt for a more robust DB like PostgreSQL, MySQL etc
+3. sqlite DB that comes along with Django. This is was just for ease testing. For production a more robust DB like PostgreSQL, MySQL etc should be used.
 4. Django REST framework to work with REST api endpoints.
 5. cURL and Advanced REST Client for functional testing.
 6. Django REST testing framework for unit and integration testing.
@@ -139,24 +142,35 @@ An explanation of each of the above endpoints is given below,
 ## Algortihms used
 1. In order to create a commitment value, SHA256 digest scheme is used in order to create a digest from the secret message, created timestamp and the user's authtoken. This ensures uniqueness and binding property of the message to the user and the time at which the message was created.
 
-2. Irrevocability of the revealing the messages is ensured by having a singleton object generated during the revealing phase that cannot be changed, updated or deleted by anyone including the committer himself.
+2. The 'hiding' property is achieved by not exposing the message through the GET endpoint until the commitment is 'revealed'.
 
-3. The actions allowed on the exposed endpoints is restricted only to the allowed ones on that endpoint so that an adversary does not try to use an endpoint in ways that it is not supposed to be used. For example, PUT/PATCH/DELETE is not allowed on the commitment endpoint and PUT/PATCH/DELETE is not allowed on the 'readability' singleton object etc.
+3. Irrevocability of the revealing the messages is ensured by having a singleton object generated during the revealing phase that cannot be changed, updated or deleted by anyone including the committer himself.
 
-4. Verification that the message has not been tampered with since generation of the message is done by generating a commited_value from the message, created_ts and user id and ensuring that its equal to the stored commitment value.
+4. The actions allowed on the exposed endpoints is restricted only to the allowed ones on that endpoint so that an adversary does not try to use an endpoint in ways that it is not supposed to be used. For example, PUT/PATCH/DELETE is not allowed on the commitment endpoint and PUT/PATCH/DELETE is not allowed on the 'readability' singleton object etc.
 
-5. The user is authenticated using a token that is generated once using his username and password. It is not ideal to re-use the same token everytime, instead it should expire within a certain amount of time and we should be generating new tokens.
+5. Verification that the message has not been tampered with since generation of the message is done by generating a commited_value from the message, created_ts and user id and ensuring that its equal to the stored commitment value.
+
+6. The user is authenticated using a token that is generated once using his username and password. It is not ideal to re-use the same token everytime, instead it should expire within a certain amount of time and we should be generating new tokens.
 
 ## Known Vulnerabilities
 1. The SHA256 digest created ensures uniqueness to a given message, user and timestamp but an adversary with unbounded computing capabilities can generate repeatedly run the hash function of changing inputs in order to recover the secret message.
 
-2. The service itself is assumed to be not compromised, if it is compromised then the secret messages will be known to the adversary. One way to avoid this is to store encrypt the secret messages using the user's token. The token of the user himself should not be stored in the system in such a case and the token needs to have lifetimes that expire within a period of time.
+2. The service itself is assumed to be not compromised, if it is compromised then the secret messages will be known to the adversary. One way to avoid this is to **encrypt** the secret messages using the user's token. The token of the user himself should not be stored in the system in such a case and the token needs to have lifetimes that expire within a period of time.
 
 3. If the adversary knows that the digest is computed on the concatenation of messge, timestamp and userid, it narrows down the possibility of guesses of the message.
 
+4. Since we don't support DELETE of commitments, system can get overwhelmed with create commitment requests and commitments can get created unboundedly.
+
 ## Unit and Integration Testing
 1. Django REST testing framework was used to run unit/integration tests for the following user flows,
-    - These tests can be found at `src/commitments/tests.py`.
+    - These tests can be found at `src/commitments/tests.py` and instructions on how to run it are as below,
+    ```
+        export TEST_SERVER=<set-this-to-your-server>
+        export TEST_USER=<username>
+        export TEST_PWD=<pwd>
+        cd to src/
+        python manage.py test
+    ```
     Sample output,
     ```
     (commit_service) ubuntu@ip-172-31-12-203:~/commit_service/src$ python manage.py test
