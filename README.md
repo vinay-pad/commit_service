@@ -36,6 +36,7 @@
  
     * `GET /v1/users/login/?username=test&password=test1234` or `GET /v1/users/login/?username=vinay&password=vinay123`
     * This request will return a token that needs to be sent as a authorization header like this `Authorization: Token 69e76dc16a64af8c765f0cc6015c815b963c339b`
+    * There is a signal handler in 'users' app that will create a new token whenever `python manage.py createsuperuser` command is run.
     - This is a highly unsecure way of sharing a DB but this is just to make testing easier :) Just calling it out here.
 
 ## Endpoints:
