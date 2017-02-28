@@ -104,6 +104,7 @@ An explanation of each of the above endpoints is given below,
         if this commit has been made readable.
 
     ```
+
 5. Irrevocably reveal a commitment to everyone
     ```
         POST /v1/commitments/<commit-id>/readability/ with 'Authorization token' in the header. This doesn't take any POST params. It just creates a 'readability' singleton instance and associates it with the commitment. This action is irreversible because the only action allowed on this endpoint is 'POST'.
@@ -120,6 +121,7 @@ An explanation of each of the above endpoints is given below,
             }
         when called subsequent times, without making any changes to the resource
     ```
+
 6. Verify when a message was posted and that it has not been tampered with since then
     ```
         GET /v1/commitments/<id>/verification/
