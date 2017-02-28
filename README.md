@@ -153,8 +153,19 @@ An explanation of each of the above endpoints is given below,
 
 3. If the adversary knows that the digest is computed on the concatenation of messge, timestamp and userid, it narrows down the possibility of guesses of the message.
 
-## Testing
+## Unit and Integration Testing
 1. Django REST testing framework was used to run unit/integration tests for the following user flows,
+    - These tests can be found at `src/commitments/tests.py`.
+    Sample output,
+    ```
+    (commit_service) ubuntu@ip-172-31-12-203:~/commit_service/src$ python manage.py test
+    Creating test database for alias 'default'...
+    ...
+    ----------------------------------------------------------------------
+    Ran 3 tests in 0.232s
+
+    OK
+    ```
 
     ### Flow 1 - verify secrecy of message
     1. User login and gets token.
