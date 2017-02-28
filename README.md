@@ -25,10 +25,10 @@
 6. Django REST testing framework for unit and integration testing.
 
 ## Instructions on how to run
-1. Clone the git directory on your workspace. Mine was a Ubuntu 16.04 VM running on a AWS EC2 instance.
-2. Navigate to commit_service directory and run,
+1. Clone the git directory on your workspace. `git clone https://github.com/vinay-pad/commit_service.git`
+2. Navigate to commit_service directory `cd commit_service` and run,
     - Create a new virtual environment, `virtualenv .`
-    - Activate the virtual environment, `./bin/activate`
+    - Activate the virtual environment, `source /bin/activate`
     - Install the dependancies specified in requirements.txt `pip install -r requirements.txt`
 3. Navigate into the `src` directory and run `python manage.py runserver 0.0.0.0:8000`. This will run the server on port 8000 on your local box.
 4. The project currently has DEBUG=True in the settings.py file which might print verbose errors when you run a unsupported/invalid curl request. This flag is kept as it is just for debugging and will be set to False in production.
@@ -56,7 +56,7 @@ An explanation of each of the above endpoints is given below,
 
 1. Get user token
     ```
-    GET v1/users/login?name=<username>&password=<password>
+    GET /v1/users/login?name=<username>&password=<password>
     returns `200 OK`
     {
         "token": <user-token>
