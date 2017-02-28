@@ -14,7 +14,7 @@
 ## Assumptions:
 1. The communication with the service would be over https.
 2. We assume here that the service itself is not 'compromised', i.e the committer and the 3rd party trust the service itself but don't trust each other.
-3. For this exercise there will be no fine-grained control over which 3rd party can view messages of which commiter, i.e. there will not be any groups w.r.t third parties and committers. Everyone else except the owner of the message will be considered a 3rd party.
+4. For this exercise there will be no fine-grained control over which 3rd party can view messages of which commiter, i.e. there will not be any groups w.r.t third parties and committers. Everyone else except the owner of the message will be considered a 3rd party.
 
 ## Tools/Frameworks used:
 1. Ubuntu 16.04 VM running on a AWS EC2 instance.
