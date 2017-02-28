@@ -120,7 +120,7 @@ An explanation of each of the above endpoints is given below,
             }
         when called subsequent times, without making any changes to the resource
     ```
-6. Verify when a message was posted and that it hasn't been tampered with since then
+6. Verify when a message was posted and that it has not been tampered with since then
     ```
         GET /v1/commitments/<id>/verification/
         returns 
@@ -128,10 +128,11 @@ An explanation of each of the above endpoints is given below,
             'id': <unique-commit-id>,
             'user': <username-of-committer>,
             'commit_value': <commitment-value>,
-            'created_ts': <created-timestamp-of-secret-message-in-utc>'
+            'created_ts': <created-timestamp-of-secret-message-in-utc>,
             'tampered': <true-or-fasle>
         }
     ```
+
 ## Algortihms used
 1. In order to create a commitment value, SHA256 digest scheme is used in order to create a digest from the secret message, created timestamp and the user's authtoken. This ensures uniqueness and binding property of the message to the user and the time at which the message was created.
 
